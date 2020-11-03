@@ -66,20 +66,19 @@ One note before you delve into your tasks: for each endpoint you are expected to
 8. Create a POST endpoint to get questions to play the quiz. This endpoint should take category and previous question parameters and return a random questions within the given category, if provided, and that is not one of the previous questions. 
 9. Create error handlers for all expected errors including 400, 404, 422 and 500. 
 
-REVIEW_COMMENT
-```
-This README is missing documentation of your endpoints. Below is an example for your endpoint to get all categories. Please use it as a reference for creating your documentation and resubmit your code. 
+## End Points
+|  No.  | Method |     End point     |
+| :---: | :----: | :---------------: |
+|   1   |  GET   |    /categories    |
+|   2   |  GET   | /questions?page=1 |
 
-Endpoints
-GET '/categories'
-GET ...
-POST ...
-DELETE ...
 
-GET '/categories'
+### GET /categories
 - Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
 - Request Arguments: None
 - Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs. 
+- sample `curl http://localhost:5000/categories`
+```
 {'1' : "Science",
 '2' : "Art",
 '3' : "Geography",
@@ -89,7 +88,151 @@ GET '/categories'
 
 ```
 
+### GET /questions
+handle GET requests for 
+- Fetches questions including pagination (every 10 questions)  a 
+- Request parameters : page (a number of the desired page)
+- Request Body : None
+- Returns: An object that includes list of questions, number of total questions, current category, categories.  
+- sample `curl http://localhost:5000/questions?page=10`
+```JSON
+{
+    categories: {
+        1: "Science",
+        2: "Art",
+        3: "Geography",
+        4: "History",
+        5: "Entertainment",
+        6: "Sports"
+    },
+    current_category: "",
+    questions: [
+        {
+            answer: "The Liver",
+            category: 1,
+            difficulty: 4,
+            id: 20,
+            question: "What is the heaviest organ in the human body?"
+        },
+        {
+            answer: "Alexander Fleming",
+            category: 1,
+            difficulty: 3,
+            id: 21,
+            question: "Who discovered penicillin?"
+        },
+        {
+            answer: "Blood",
+            category: 1,
+            difficulty: 4,
+            id: 22,
+            question: "Hematology is a branch of medicine involving the study of what?"
+        },
+        {
+            answer: "Scarab",
+            category: 4,
+            difficulty: 4,
+            id: 23,
+        question: "Which dung beetle was worshipped by the ancient Egyptians?"
+        },
+        {
+            answer: "a",
+            category: 4,
+            difficulty: 5,
+            id: 27,
+            question: "q"
+        },
+        {
+            answer: "a",
+            category: 4,
+            difficulty: 5,
+            id: 28,
+            question: "q"
+        }
+    ],
+    total_questions: 16
+}
 
+```
+
+### DELETE /questions/question_id 
+
+- Delete a question using a given id 
+- Request parameters : question id
+- Request Body : None
+- Returns: An object that includes status_code and a message.
+- sample `curl http://localhost:5000/questions/10`
+```JSON
+{
+    'message': 'recored deleted!!',
+    'status_code': 200
+}
+```
+
+### POST /questions 
+
+- Adding a new question 
+- Request parameters : None
+- Request Body : An object contains a question, answer, category ,and difficulty level
+- Returns: An object that includes status_code and a message.
+- sample ```curl http://localhost:5000/questions -X POST -H "Content-Type: application/json" 
+    -d '{"question": "Q", "answer": "A",category:1,difficulty:5}'```
+```JSON
+{
+    'message': 'recored deleted!!',
+    'status_code': 200
+}
+```
+
+### POST /questions/search
+
+- Adding a new question 
+- Request parameters : None
+- Request Body : An object contains the search term
+- Returns: An object that includes list of questions and total number of questions.
+- sample ```curl http://localhost:5000/questions/search -X POST -H "Content-Type: application/json" 
+    -d '{"searchTerm": "Q"}'```
+```JSON
+{
+    'questions': [],
+    'total_questions': 0,
+    'current_category': '',
+}
+```
+
+### GET /categories/2/questions
+
+- getting all questions of specific category 
+- Request parameters : None
+- Request Body : None
+- sample ```curl http://localhost:5000/categories/2/questions ```JSON
+{
+    'questions': [],
+    'total_questions': 0,
+    'current_category': ''
+}
+```
+
+
+
+### POST /quizzes
+
+- handling a quiz 's questions 
+- Request parameters : None
+- Request Body : An object contains the previous questions and question category 
+- Returns: An object that includes a new question.
+- sample ```curl http://localhost:5000/quizzes/search -X POST -H "Content-Type: application/json" 
+    -d '{"previous_question": "Q","quiz_category ": {id : 5,type:'Sport'}}'```
+```JSON
+{
+    'question': {
+        question : '' , 
+        answer : '' , 
+        difficulty : '',
+        category : ''
+    },
+}
+```
 ## Testing
 To run the tests, run
 ```

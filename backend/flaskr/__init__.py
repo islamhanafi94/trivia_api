@@ -46,8 +46,10 @@ def create_app(test_config=None):
         try:
             categories = {cat.id: cat.type
                           for cat in Category.query.order_by(Category.id).all()}
+            if not categories:
+                abort(404)
         except:
-            db.session.roll_back()
+            db.session.rollback()
             abort(500)
         finally:
             db.session.close()
@@ -77,6 +79,9 @@ def create_app(test_config=None):
 
         questions = [question.format()
                      for question in Question.query.order_by(Question.id).all()]
+
+        if len(questions[start:end]) == 0:
+            abort(404)
 
         categories = {cat.id: cat.type
                       for cat in Category.query.order_by(Category.id).all()}
@@ -110,7 +115,7 @@ def create_app(test_config=None):
             res['message'] = f"Record with id : {question_id} is deleted !!"
             res['status_code'] = 200
         except:
-            db.session.roll_back()
+            db.session.rollback()
         finally:
             db.session.close()
 
@@ -131,9 +136,16 @@ def create_app(test_config=None):
         if not request.data:
             abort(400)
         data = dict(request.get_json())
-        new_question = Question(data['question'], data['answer'],
-                                data['category'], data['difficulty'])
-        new_question.insert()
+        try:
+            new_question = Question(data['question'], data['answer'],
+                                    data['category'], data['difficulty'])
+            new_question.insert()
+        except:
+            db.session.rollback()
+            abort(400)
+        finally:
+            db.session.close()
+
         return jsonify({'status_code': 201}), 201
 
     '''
@@ -172,6 +184,11 @@ def create_app(test_config=None):
     '''
     @app.route('/categories/<int:cat_id>/questions')
     def questions_by_category(cat_id):
+        current_category = Category.query.get(cat_id)
+
+        if not current_category:
+            abort(404)
+
         questions = [q.format()
                      for q in Question.query.filter_by(category=cat_id).all()]
 
@@ -195,8 +212,12 @@ def create_app(test_config=None):
     '''
     @app.route('/quizzes', methods=['POST'])
     def generate_question():
-        previous_questions = dict(request.get_json())['previous_questions']
-        quiz_category = dict(request.get_json())['quiz_category']
+        try:
+            previous_questions = dict(request.get_json())[
+                'previous_questions']
+            quiz_category = dict(request.get_json())['quiz_category']
+        except:
+            abort(400)
 
         all_questions = []
         if quiz_category['type'] == 'click' and quiz_category['id'] == 0:

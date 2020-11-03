@@ -36,22 +36,37 @@ class TriviaTestCase(unittest.TestCase):
     Write at least one test for each test for successful operation and for expected errors.
     """
 
-    def test_get_categories(self):
+    def test_get_categories_success(self):
         res = self.client().get('/categories')
         self.assertEqual(res.status_code, 200)
 
+    def test_get_categories_failure(self):
+        res = self.client().get('/categori')
+        self.assertEqual(res.status_code, 404)
+
     def test_get_questions_success(self):
         page = 1
-        res = self.client().get("/questions?page={page}")
-        # data = json.loads(res.data)
+        res = self.client().get(f"/questions?page={page}")
         self.assertEqual(res.status_code, 200)
 
-    # def test_delete_question_success(self):
-    #     res = self.client().delete("/questions/10")
-    #     self.assertEqual(res.status_code, 200)
+    def test_get_questions_failed(self):
+        page = '15'  # doesn't exist
+        res = self.client().get(f"/questions?page={page}")
+        self.assertEqual(res.status_code, 404)
+
+    def test_delete_question_success(self):
+        # creating new test question
+        new_question = Question('How are you ?', 'Fine', 5, 1)
+        new_question.insert()
+        res = self.client().delete(f"/questions/{new_question.id}")
+        print(new_question.id)
+        self.assertEqual(res.status_code, 200)
 
     def test_delete_question_failure(self):
-        res = self.client().delete("/questions/566666")
+        new_question = Question('How are you ?', 'Fine', 5, 1)
+        new_question.insert()
+        new_question.delete()
+        res = self.client().delete(f"/questions/{new_question.id}")
         self.assertEqual(res.status_code, 404)
 
     def test_add_question_success(self):
@@ -62,6 +77,11 @@ class TriviaTestCase(unittest.TestCase):
             'difficulty': 5
         }), headers={'Content-Type': 'application/json'})
         self.assertEqual(res.status_code, 201)
+
+    def test_add_question_failure(self):
+        res = self.client().post(
+            "/questions",  headers={'Content-Type': 'application/json'})
+        self.assertEqual(res.status_code, 400)
 
     def test_search_question_success(self):
         res = self.client().post("/questions/search", data=json.dumps({
@@ -78,6 +98,26 @@ class TriviaTestCase(unittest.TestCase):
     def test_get_category_questions_success(self):
         res = self.client().get("/categories/4/questions")
         self.assertEqual(res.status_code, 200)
+
+    def test_get_category_questions_failure(self):
+        res = self.client().get("/categories/555/questions")
+        self.assertEqual(res.status_code, 404)
+
+    def test_quizz_success(self):
+        previous_questions = []
+        quiz_category = {'id': 6, 'type': 'Sports'}
+        res = self.client().post("/quizzes", data=json.dumps({
+            'previous_questions': previous_questions,
+            'quiz_category': quiz_category
+        }), headers={'Content-Type': 'application/json'})
+        self.assertEqual(res.status_code, 200)
+
+    def test_quizz_failure(self):
+        previous_questions = []
+        res = self.client().post("/quizzes", data=json.dumps({
+            'previous_questions': previous_questions,
+        }), headers={'Content-Type': 'application/json'})
+        self.assertEqual(res.status_code, 400)
 
 
         # Make the tests conveniently executable
